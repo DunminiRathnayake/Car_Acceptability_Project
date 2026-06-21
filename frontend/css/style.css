@@ -888,3 +888,59 @@ body {
     z-index: 95;
     animation: fadeIn 0.2s ease-out;
 }
+
+/* Performance Plots Styles */
+.insights-plots {
+    margin-top: 2rem;
+    border-top: 1px solid var(--card-border);
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.description-small {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.plots-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .plots-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.plot-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.plot-box h5 {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.responsive-plot {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.responsive-plot:hover {
+    transform: scale(1.02);
+}
