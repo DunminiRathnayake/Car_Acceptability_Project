@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from backend.model_handler import ModelHandler
+from backend.explanation_engine import explain_prediction
+
 
 app = FastAPI(
     title="Car Acceptability Predictor API",
@@ -49,11 +51,15 @@ async def predict_car_acceptability(request: PredictRequest):
     # Run prediction
     result = model_handler.predict(input_data)
     
+    # Generate explanation
+    explanation = explain_prediction(input_data, result["prediction"])
+    
     return {
         "status": "success",
         "prediction": result["prediction"],
         "prediction_label": result["prediction_label"],
         "confidence": result["confidence"],
+        "explanation": explanation,
         "inputs": input_data
     }
 

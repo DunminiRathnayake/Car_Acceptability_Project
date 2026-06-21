@@ -121,13 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gaugeFill.style.strokeDashoffset = offset;
 
         // Display outcome descriptive copy
-        const descriptions = {
-            unacc: "The vehicle exhibits highly critical limitations (most often related to unsafe ratings or disproportionate maintenance prices), making it unacceptable for buying or standard operations.",
-            acc: "The vehicle satisfies core requirements. While some features may be moderate or basic, it is deemed acceptable for routine tasks.",
-            good: "The vehicle presents a reliable quality configuration. Features like high safety paired with reasonable cost models make it a good selection.",
-            vgood: "This vehicle is in outstanding condition, matching the highest safety rankings combined with low costs or very high capacity. It rates as very good."
-        };
-        explanationText.textContent = descriptions[prediction] || "Vehicular parameters processed successfully.";
+        explanationText.textContent = data.explanation || "Vehicular parameters processed successfully.";
     }
 
     // Reset Result View

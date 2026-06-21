@@ -31,7 +31,28 @@ def test_prediction_api():
     assert data["status"] == "success"
     assert "prediction" in data
     assert "confidence" in data
-    print("\nSUCCESS: Prediction API test passed successfully!")
+    assert "explanation" in data
+    assert "cost" in data["explanation"].lower() or "price" in data["explanation"].lower()
+    
+    # Test case 2: Unacceptable safety configuration
+    safety_payload = {
+        "buying": "low",
+        "maint": "low",
+        "doors": "4",
+        "persons": "more",
+        "lug_boot": "med",
+        "safety": "low"
+    }
+    print(f"\nSending low safety payload: {safety_payload}")
+    response = client.post("/api/predict", json=safety_payload)
+    print(f"Response body: {response.json()}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["prediction"] == "unacc"
+    assert "safety" in data["explanation"].lower()
+    assert "low safety rating" in data["explanation"].lower()
+    
+    print("\nSUCCESS: Prediction API test and Explainable AI tests passed successfully!")
 
 if __name__ == "__main__":
     test_prediction_api()
