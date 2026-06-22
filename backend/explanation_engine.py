@@ -9,11 +9,22 @@ def explain_prediction(
     Analyzes model prediction, confidence scores, and SHAP-based feature contributions
     to generate structured, instance-level explanations.
     
+    SHAP (SHapley Additive exPlanations) Explanation and Interpretation:
+    - What it is: A method to explain individual machine learning predictions based on optimal 
+      allocation of attribution values (Shapley values) derived from cooperative game theory.
+    - Calculation: Computes the average marginal change in predicted probability across all 
+      possible feature combinations.
+    - Not Probabilities: SHAP values represent a feature's additive contribution to the model's 
+      final output score relative to the base/expected value. They are not independent probabilities 
+      and should not be labeled with percentage signs.
+    - Interpretation: Positive influence scores represent features that increased the model's output 
+      toward the predicted class; negative influence scores represent features that decreased it.
+    
     Args:
         inputs (dict): Raw input features selected by the user.
         prediction_class (str): Predicted class (e.g. 'unacc', 'acc', 'good', 'vgood').
         contributions (list): List of dicts representing feature impact scores:
-                             [{'feature': '...', 'influence': float}]
+                             [{'feature': '...', 'influence_score': float}]
         confidence (float): Calculated model confidence probability percentage.
         second_confidence (float): Second highest class probability percentage.
         
@@ -55,7 +66,7 @@ def explain_prediction(
     # Process contributions dynamically using features from metadata
     for item in contributions:
         feat = item["feature"]
-        influence = item["influence"]
+        influence = item["influence_score"]
         raw_val = inputs.get(feat, "")
         
         # Resolve display names and value formatting dynamically
@@ -65,7 +76,9 @@ def explain_prediction(
         
         feat_info = {
             "feature": feat,
-            "influence": influence,
+            "influence_score": influence,
+            "impact_score": influence,
+            "contribution_strength": influence,
             "value": value_display,
             "display_name": display_name
         }
@@ -76,10 +89,10 @@ def explain_prediction(
             neg_features.append(feat_info)
             
     # Sort positive features descending (strongest positive influence first)
-    pos_features.sort(key=lambda x: x["influence"], reverse=True)
+    pos_features.sort(key=lambda x: x["influence_score"], reverse=True)
     
     # Sort negative features ascending (most negative influence first)
-    neg_features.sort(key=lambda x: x["influence"])
+    neg_features.sort(key=lambda x: x["influence_score"])
 
     # Generate natural language summary using "influence/impact score" terminology
     summary_parts = []
@@ -87,12 +100,12 @@ def explain_prediction(
         top_pos = pos_features[0]
         summary_parts.append(
             f"The vehicle is evaluated as {pred_label} primarily because of its {top_pos['display_name']} ({top_pos['value']}), "
-            f"which contributed a positive influence score of +{top_pos['influence']}."
+            f"which contributed a positive impact score of +{top_pos['influence_score']:.4f}."
         )
         if len(pos_features) > 1:
             sec_pos = pos_features[1]
             summary_parts.append(
-                f"Additionally, its {sec_pos['display_name']} ({sec_pos['value']}) had a positive influence score of +{sec_pos['influence']}."
+                f"Additionally, its {sec_pos['display_name']} ({sec_pos['value']}) had a positive impact score of +{sec_pos['influence_score']:.4f}."
             )
     else:
         summary_parts.append(f"The vehicle parameters combined to result in a {pred_label} evaluation.")
@@ -112,12 +125,12 @@ def explain_prediction(
     if prediction_class == "unacc":
         confidence_reason = (
             f"The model's classification is {decision_strength.lower()} ({confidence:.1f}% confidence) because key attributes "
-            f"failed to meet basic acceptability thresholds, leading to a clear margin of {margin:.1f} points."
+            f"failed to meet basic acceptability thresholds, leading to a clear margin of {margin:.1f} points over alternative outcomes."
         )
     else:
         confidence_reason = (
             f"The model has a {decision_strength.lower()} degree of certainty ({confidence:.1f}% confidence) for this evaluation, "
-            f"exhibiting an influence margin of {margin:.1f} points over the next alternative classification."
+            f"exhibiting a prediction probability margin of {margin:.1f} points over the next alternative classification."
         )
 
     return {

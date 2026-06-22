@@ -40,6 +40,16 @@ def test_prediction_api():
     assert "confidence_reason" in explanation_dict
     assert "decision_strength" in explanation_dict
     
+    # Verify SHAP value keys are present in features
+    if len(explanation_dict["top_positive_features"]) > 0:
+        first_feat = explanation_dict["top_positive_features"][0]
+        assert "influence_score" in first_feat
+        assert "impact_score" in first_feat
+        assert "contribution_strength" in first_feat
+        assert isinstance(first_feat["influence_score"], float)
+        # Ensure it is not scaled as a probability percentage (raw floats are usually <= 1.0)
+        assert abs(first_feat["influence_score"]) <= 1.0
+        
     summary = explanation_dict["summary"].lower()
     assert "cost" in summary or "price" in summary or "buying" in summary or "maint" in summary
     

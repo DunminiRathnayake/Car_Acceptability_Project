@@ -75,16 +75,29 @@ class ModelHandler:
             
     def predict(self, inputs: dict) -> dict:
         """
-        Takes raw string inputs, validates them using the loaded encoders,
-        transforms features to numerical form, runs model prediction,
-        computes SHAP values, and decodes the output class back to its original label.
+        Takes raw string inputs, validates them, transforms features,
+        runs model prediction, computes class-specific SHAP values,
+        and returns prediction metrics alongside feature influence scores.
+        
+        SHAP (SHapley Additive exPlanations) Background:
+        - What it is: A game-theoretic approach to explain the output of any machine learning model.
+        - How SHAP values are calculated: By comparing model predictions with and without specific features 
+          across all possible feature subsets (coalitions), computing marginal contributions.
+        - Why they are NOT probabilities: SHAP values represent additive attributions on the model's 
+          output scale (log-odds margin for classifiers or raw probability differences). They show 
+          direction and size of contribution, not probability percentages.
+        - Interpretation: A positive influence score increases the probability of the predicted class 
+          relative to the dataset's base rate, while a negative score decreases it.
         """
         # Validate inputs first
         self.validate_inputs(inputs)
 
+        # Get feature names dynamically from metadata, fallback to encoder keys (excluding target class)
+        feature_names = self.metadata.get("feature_names") if self.metadata else [k for k in self.encoders.keys() if k != "class"]
+
         # Encode inputs dynamically using each feature's LabelEncoder
         encoded_dict = {}
-        for feature in ["buying", "maint", "doors", "persons", "lug_boot", "safety"]:
+        for feature in feature_names:
             val = str(inputs[feature]).lower()
             encoder = self.encoders[feature]
             encoded_dict[feature] = int(encoder.transform([val])[0])
@@ -108,17 +121,22 @@ class ModelHandler:
         second_confidence = float(sorted_proba[-2]) * 100 if len(sorted_proba) > 1 else 0.0
 
         # Compute SHAP values for the single input sample
+        # Returns a numpy array of shape (n_samples, n_features, n_classes)
         shap_vals = self.explainer.shap_values(df_input)
+        
+        # Select correct class-specific SHAP values for the predicted multiclass output
         class_shap = shap_vals[0, :, int(pred_numeric)]
 
-        # Get feature names dynamically from metadata, fallback to default ordering
-        feature_names = self.metadata.get("feature_names") if self.metadata else ["buying", "maint", "doors", "persons", "lug_boot", "safety"]
-
-        # Scale SHAP values into "influence scores"
+        # Map SHAP values to raw influence, impact, and strength scores (NOT probability percentages)
         contributions = []
         for i, feat in enumerate(feature_names):
-            influence = float(class_shap[i]) * 100
-            contributions.append({"feature": feat, "influence": round(influence, 2)})
+            val = float(class_shap[i])
+            contributions.append({
+                "feature": feat,
+                "influence_score": round(val, 4),
+                "impact_score": round(val, 4),
+                "contribution_strength": round(val, 4)
+            })
 
         return {
             "prediction": pred_class,

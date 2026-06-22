@@ -1150,3 +1150,17 @@ body {
     padding: 0.5rem 0;
 }
 
+.shap-info-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.shap-info-text i {
+    color: var(--accent-blue);
+}
+
+

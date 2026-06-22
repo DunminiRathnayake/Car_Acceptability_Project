@@ -183,12 +183,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     posFeatures.forEach(feat => {
                         const item = document.createElement('div');
                         item.className = 'shap-item';
-                        // Math.min/max boundary checks for progress bar widths
-                        const barWidth = Math.min(100, Math.max(1, Math.abs(feat.influence)));
+                        // Math.min/max boundary checks for progress bar widths (raw score * 100 for percentage width)
+                        const barWidth = Math.min(100, Math.max(1, Math.abs(feat.influence_score) * 100));
                         item.innerHTML = `
                             <div class="shap-meta">
                                 <span class="shap-label">${feat.display_name} <span class="shap-feature-val">(${feat.value})</span></span>
-                                <span class="shap-score positive-score">+${feat.influence.toFixed(2)} Influence</span>
+                                <span class="shap-score positive-score">+${feat.influence_score.toFixed(4)} Impact Score</span>
                             </div>
                             <div class="shap-bar-bg">
                                 <div class="shap-bar-fill positive-fill" style="width: ${barWidth}%"></div>
@@ -205,11 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     negFeatures.forEach(feat => {
                         const item = document.createElement('div');
                         item.className = 'shap-item';
-                        const barWidth = Math.min(100, Math.max(1, Math.abs(feat.influence)));
+                        const barWidth = Math.min(100, Math.max(1, Math.abs(feat.influence_score) * 100));
                         item.innerHTML = `
                             <div class="shap-meta">
                                 <span class="shap-label">${feat.display_name} <span class="shap-feature-val">(${feat.value})</span></span>
-                                <span class="shap-score negative-score">${feat.influence.toFixed(2)} Influence</span>
+                                <span class="shap-score negative-score">${feat.influence_score.toFixed(4)} Impact Score</span>
                             </div>
                             <div class="shap-bar-bg">
                                 <div class="shap-bar-fill negative-fill" style="width: ${barWidth}%"></div>
