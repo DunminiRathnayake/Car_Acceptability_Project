@@ -39,6 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHistory();
     fetchMetadata();
 
+    // Cache-bust dashboard plots to force reload and bypass browser cache
+    const plots = document.querySelectorAll('.responsive-plot');
+    plots.forEach(img => {
+        const src = img.getAttribute('src');
+        if (src) {
+            img.setAttribute('src', `${src.split('?')[0]}?t=${new Date().getTime()}`);
+        }
+    });
+
     // 1. Prediction Form Handler
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
