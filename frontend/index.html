@@ -162,7 +162,40 @@
                     </div>
 
                     <div class="result-description-box" id="result-desc-box">
-                        <p id="result-explanation">This vehicle exhibits poor safety ratings and high maintenance costs, yielding an unacceptable score.</p>
+                        <div class="explanation-meta-row">
+                            <div class="meta-badge-item">
+                                <span class="meta-badge-title">Decision Strength</span>
+                                <span id="decision-strength-badge" class="badge-strength">Moderate</span>
+                            </div>
+                            <div class="meta-badge-item">
+                                <span class="meta-badge-title">Confidence Reason</span>
+                                <span id="confidence-reason-badge" class="badge-reason">Loading explanation detail...</span>
+                            </div>
+                        </div>
+                        <p id="result-explanation" class="explanation-summary">This vehicle exhibits poor safety ratings and high maintenance costs, yielding an unacceptable score.</p>
+                        
+                        <!-- SHAP Details Panel -->
+                        <div id="shap-details" class="shap-details">
+                            <div class="shap-columns-title">Feature Influence Analysis (SHAP Impact Scores)</div>
+                            <div class="shap-columns">
+                                <div class="shap-column">
+                                    <h4 class="shap-col-header positive-col-header">
+                                        <i class="fa-solid fa-square-plus"></i> Positive Factors (Supporting Evaluation)
+                                    </h4>
+                                    <div id="shap-positive-list" class="shap-list">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                                <div class="shap-column">
+                                    <h4 class="shap-col-header negative-col-header">
+                                        <i class="fa-solid fa-square-minus"></i> Negative Factors (Opposing Evaluation)
+                                    </h4>
+                                    <div id="shap-negative-list" class="shap-list">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="result-actions">

@@ -2,6 +2,7 @@ import os
 import pickle
 import pandas as pd
 import numpy as np
+import shap
 
 # We map outcome abbreviations to friendly labels for UI rendering
 CLASS_LABELS = {
@@ -15,6 +16,7 @@ class ModelHandler:
     def __init__(self):
         self.model = None
         self.encoders = None
+        self.explainer = None
         
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.models_dir = os.path.join(self.base_dir, "models")
@@ -26,7 +28,7 @@ class ModelHandler:
         self.load_artifacts()
 
     def load_artifacts(self):
-        """Loads serialized model, encoders, and metadata pickle files."""
+        """Loads serialized model, encoders, metadata, and initializes the SHAP TreeExplainer."""
         if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"Model file not found at {self.model_path}")
         if not os.path.exists(self.encoders_path):
@@ -42,6 +44,9 @@ class ModelHandler:
         if os.path.exists(self.metadata_path):
             with open(self.metadata_path, "rb") as f:
                 self.metadata = pickle.load(f)
+                
+        # Initialize SHAP TreeExplainer once during startup
+        self.explainer = shap.TreeExplainer(self.model)
 
     def get_metadata(self) -> dict:
         """Returns the model training metadata."""
@@ -72,7 +77,7 @@ class ModelHandler:
         """
         Takes raw string inputs, validates them using the loaded encoders,
         transforms features to numerical form, runs model prediction,
-        and decodes the output class back to its original label.
+        computes SHAP values, and decodes the output class back to its original label.
         """
         # Validate inputs first
         self.validate_inputs(inputs)
@@ -82,7 +87,6 @@ class ModelHandler:
         for feature in ["buying", "maint", "doors", "persons", "lug_boot", "safety"]:
             val = str(inputs[feature]).lower()
             encoder = self.encoders[feature]
-            # Use transform to convert string to numeric
             encoded_dict[feature] = int(encoder.transform([val])[0])
 
         # Convert to Pandas DataFrame to match original feature names
@@ -98,9 +102,28 @@ class ModelHandler:
 
         # Calculate confidence using probability list matching pred_numeric
         confidence = float(pred_proba[int(pred_numeric)]) * 100
+        
+        # Calculate second best probability for decision strength margin
+        sorted_proba = np.sort(pred_proba)
+        second_confidence = float(sorted_proba[-2]) * 100 if len(sorted_proba) > 1 else 0.0
+
+        # Compute SHAP values for the single input sample
+        shap_vals = self.explainer.shap_values(df_input)
+        class_shap = shap_vals[0, :, int(pred_numeric)]
+
+        # Get feature names dynamically from metadata, fallback to default ordering
+        feature_names = self.metadata.get("feature_names") if self.metadata else ["buying", "maint", "doors", "persons", "lug_boot", "safety"]
+
+        # Scale SHAP values into "influence scores"
+        contributions = []
+        for i, feat in enumerate(feature_names):
+            influence = float(class_shap[i]) * 100
+            contributions.append({"feature": feat, "influence": round(influence, 2)})
 
         return {
             "prediction": pred_class,
             "prediction_label": pred_label,
-            "confidence": round(confidence, 2)
+            "confidence": round(confidence, 2),
+            "second_confidence": round(second_confidence, 2),
+            "contributions": contributions
         }

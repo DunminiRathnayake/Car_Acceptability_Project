@@ -32,7 +32,16 @@ def test_prediction_api():
     assert "prediction" in data
     assert "confidence" in data
     assert "explanation" in data
-    assert "cost" in data["explanation"].lower() or "price" in data["explanation"].lower()
+    
+    explanation_dict = data["explanation"]
+    assert "summary" in explanation_dict
+    assert "top_positive_features" in explanation_dict
+    assert "top_negative_features" in explanation_dict
+    assert "confidence_reason" in explanation_dict
+    assert "decision_strength" in explanation_dict
+    
+    summary = explanation_dict["summary"].lower()
+    assert "cost" in summary or "price" in summary or "buying" in summary or "maint" in summary
     
     # Test case 2: Unacceptable safety configuration
     safety_payload = {
@@ -49,8 +58,11 @@ def test_prediction_api():
     assert response.status_code == 200
     data = response.json()
     assert data["prediction"] == "unacc"
-    assert "safety" in data["explanation"].lower()
-    assert "low safety rating" in data["explanation"].lower()
+    
+    explanation_dict = data["explanation"]
+    summary = explanation_dict["summary"].lower()
+    assert "safety" in summary
+    assert "low safety" in summary
     
     # Test case 3: Invalid category input validation
     invalid_payload = {

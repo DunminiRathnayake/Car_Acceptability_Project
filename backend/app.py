@@ -52,7 +52,13 @@ async def predict_car_acceptability(request: PredictRequest):
     result = model_handler.predict(input_data)
     
     # Generate explanation
-    explanation = explain_prediction(input_data, result["prediction"])
+    explanation = explain_prediction(
+        inputs=input_data,
+        prediction_class=result["prediction"],
+        contributions=result["contributions"],
+        confidence=result["confidence"],
+        second_confidence=result["second_confidence"]
+    )
     
     return {
         "status": "success",

@@ -121,8 +121,96 @@ document.addEventListener('DOMContentLoaded', () => {
         const offset = SVG_CIRCUMFERENCE - (SVG_CIRCUMFERENCE * confidence / 100);
         gaugeFill.style.strokeDashoffset = offset;
 
-        // Display outcome descriptive copy
-        explanationText.textContent = data.explanation || "Vehicular parameters processed successfully.";
+        // Handle backward compatibility for string-based explanations in history
+        let explanation = data.explanation;
+        if (typeof explanation === 'string') {
+            explanation = {
+                summary: explanation,
+                top_positive_features: [],
+                top_negative_features: [],
+                decision_strength: 'Moderate',
+                confidence_reason: 'This is a historical record evaluated before model-driven explanations were introduced.'
+            };
+        }
+
+        // Display summary text
+        explanationText.textContent = explanation.summary || "Vehicular parameters processed successfully.";
+
+        // Update Strength and Reason badges
+        const strengthBadge = document.getElementById('decision-strength-badge');
+        const reasonBadge = document.getElementById('confidence-reason-badge');
+        
+        if (strengthBadge) {
+            strengthBadge.textContent = `${explanation.decision_strength} Decision`;
+            strengthBadge.className = `badge-strength strength-${explanation.decision_strength.toLowerCase()}`;
+        }
+        
+        if (reasonBadge) {
+            reasonBadge.textContent = explanation.confidence_reason;
+        }
+
+        // Render SHAP Lists
+        const positiveList = document.getElementById('shap-positive-list');
+        const negativeList = document.getElementById('shap-negative-list');
+        const shapDetails = document.getElementById('shap-details');
+
+        if (positiveList && negativeList) {
+            positiveList.innerHTML = '';
+            negativeList.innerHTML = '';
+
+            const posFeatures = explanation.top_positive_features || [];
+            const negFeatures = explanation.top_negative_features || [];
+
+            // Hide section if there is no SHAP details (e.g. legacy history)
+            if (posFeatures.length === 0 && negFeatures.length === 0) {
+                if (shapDetails) shapDetails.classList.add('hidden');
+            } else {
+                if (shapDetails) shapDetails.classList.remove('hidden');
+
+                // Render positive factors
+                if (posFeatures.length === 0) {
+                    positiveList.innerHTML = '<div class="shap-empty-msg">No positive influence factors contributing to this prediction.</div>';
+                } else {
+                    posFeatures.forEach(feat => {
+                        const item = document.createElement('div');
+                        item.className = 'shap-item';
+                        // Math.min/max boundary checks for progress bar widths
+                        const barWidth = Math.min(100, Math.max(1, Math.abs(feat.influence)));
+                        item.innerHTML = `
+                            <div class="shap-meta">
+                                <span class="shap-label">${feat.display_name} <span class="shap-feature-val">(${feat.value})</span></span>
+                                <span class="shap-score positive-score">+${feat.influence.toFixed(2)} Influence</span>
+                            </div>
+                            <div class="shap-bar-bg">
+                                <div class="shap-bar-fill positive-fill" style="width: ${barWidth}%"></div>
+                            </div>
+                        `;
+                        positiveList.appendChild(item);
+                    });
+                }
+
+                // Render negative factors
+                if (negFeatures.length === 0) {
+                    negativeList.innerHTML = '<div class="shap-empty-msg">No negative influence factors opposing this prediction.</div>';
+                } else {
+                    negFeatures.forEach(feat => {
+                        const item = document.createElement('div');
+                        item.className = 'shap-item';
+                        const barWidth = Math.min(100, Math.max(1, Math.abs(feat.influence)));
+                        item.innerHTML = `
+                            <div class="shap-meta">
+                                <span class="shap-label">${feat.display_name} <span class="shap-feature-val">(${feat.value})</span></span>
+                                <span class="shap-score negative-score">${feat.influence.toFixed(2)} Influence</span>
+                            </div>
+                            <div class="shap-bar-bg">
+                                <div class="shap-bar-fill negative-fill" style="width: ${barWidth}%"></div>
+                            </div>
+                        `;
+                        negativeList.appendChild(item);
+                    });
+                }
+            }
+        }
     }
 
     // Reset Result View

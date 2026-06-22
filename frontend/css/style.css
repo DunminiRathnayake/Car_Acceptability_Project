@@ -944,3 +944,209 @@ body {
 .responsive-plot:hover {
     transform: scale(1.02);
 }
+
+/* SHAP Explainability & Badges UI Styles */
+
+.explanation-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.meta-badge-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.meta-badge-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+}
+
+.badge-strength {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    width: fit-content;
+}
+
+/* Decision Strength Color Classes */
+.strength-strong {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-vgood);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.strength-moderate {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--accent-blue);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.strength-weak {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-acc);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-reason {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    max-width: 450px;
+}
+
+.explanation-summary {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.shap-details {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.shap-columns-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.shap-columns-title::after {
+    content: '';
+    flex-grow: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.shap-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .shap-columns {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.shap-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.shap-col-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.positive-col-header {
+    color: var(--color-vgood);
+}
+
+.negative-col-header {
+    color: var(--color-unacc);
+}
+
+.shap-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.shap-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.shap-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.shap-label {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.shap-feature-val {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.shap-score {
+    font-weight: 600;
+    font-family: var(--font-heading);
+}
+
+.positive-score {
+    color: var(--color-vgood);
+}
+
+.negative-score {
+    color: var(--color-unacc);
+}
+
+.shap-bar-bg {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.shap-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.positive-fill {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), var(--color-vgood));
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.negative-fill {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.6), var(--color-unacc));
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+.shap-empty-msg {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 0.5rem 0;
+}
+

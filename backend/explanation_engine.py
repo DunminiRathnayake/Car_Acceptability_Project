@@ -1,79 +1,130 @@
-def explain_prediction(inputs: dict, prediction_class: str) -> str:
+def explain_prediction(
+    inputs: dict, 
+    prediction_class: str, 
+    contributions: list, 
+    confidence: float, 
+    second_confidence: float = 0.0
+) -> dict:
     """
-    Analyzes input features and predicted class to generate a dynamic,
-    instance-level explanation text of why the car received its classification.
+    Analyzes model prediction, confidence scores, and SHAP-based feature contributions
+    to generate structured, instance-level explanations.
+    
+    Args:
+        inputs (dict): Raw input features selected by the user.
+        prediction_class (str): Predicted class (e.g. 'unacc', 'acc', 'good', 'vgood').
+        contributions (list): List of dicts representing feature impact scores:
+                             [{'feature': '...', 'influence': float}]
+        confidence (float): Calculated model confidence probability percentage.
+        second_confidence (float): Second highest class probability percentage.
+        
+    Returns:
+        dict: Structured explanation containing summary text, top features,
+              decision strength, and confidence reason.
     """
-    buying = inputs.get("buying", "").lower()
-    maint = inputs.get("maint", "").lower()
-    doors = inputs.get("doors", "")
-    persons = inputs.get("persons", "").lower()
-    lug_boot = inputs.get("lug_boot", "").lower()
-    safety = inputs.get("safety", "").lower()
+    # Determine user-friendly prediction label
+    class_labels = {
+        "unacc": "Unacceptable",
+        "acc": "Acceptable",
+        "good": "Good",
+        "vgood": "Very Good"
+    }
+    pred_label = class_labels.get(prediction_class, prediction_class.capitalize())
 
-    # 1. Unacceptable (unacc) dealbreakers
+    # Pre-defined display mappings for default features and categories
+    feature_display_names = {
+        "buying": "Buying Price",
+        "maint": "Maintenance Cost",
+        "doors": "Doors Count",
+        "persons": "Persons Capacity",
+        "lug_boot": "Luggage Boot Size",
+        "safety": "Safety Rating"
+    }
+    
+    value_display_maps = {
+        "buying": {"vhigh": "Very High", "high": "High", "med": "Medium", "low": "Low"},
+        "maint": {"vhigh": "Very High", "high": "High", "med": "Medium", "low": "Low"},
+        "doors": {"2": "2 Doors", "3": "3 Doors", "4": "4 Doors", "5more": "5 or More"},
+        "persons": {"2": "2 Persons", "4": "4 Persons", "more": "More than 4"},
+        "lug_boot": {"small": "Small", "med": "Medium", "big": "Big"},
+        "safety": {"low": "Low Safety", "med": "Medium Safety", "high": "High Safety"}
+    }
+
+    pos_features = []
+    neg_features = []
+    
+    # Process contributions dynamically using features from metadata
+    for item in contributions:
+        feat = item["feature"]
+        influence = item["influence"]
+        raw_val = inputs.get(feat, "")
+        
+        # Resolve display names and value formatting dynamically
+        display_name = feature_display_names.get(feat, feat.replace("_", " ").title())
+        val_map = value_display_maps.get(feat, {})
+        value_display = val_map.get(str(raw_val).lower(), str(raw_val).capitalize())
+        
+        feat_info = {
+            "feature": feat,
+            "influence": influence,
+            "value": value_display,
+            "display_name": display_name
+        }
+        
+        if influence > 0:
+            pos_features.append(feat_info)
+        elif influence < 0:
+            neg_features.append(feat_info)
+            
+    # Sort positive features descending (strongest positive influence first)
+    pos_features.sort(key=lambda x: x["influence"], reverse=True)
+    
+    # Sort negative features ascending (most negative influence first)
+    neg_features.sort(key=lambda x: x["influence"])
+
+    # Generate natural language summary using "influence/impact score" terminology
+    summary_parts = []
+    if pos_features:
+        top_pos = pos_features[0]
+        summary_parts.append(
+            f"The vehicle is evaluated as {pred_label} primarily because of its {top_pos['display_name']} ({top_pos['value']}), "
+            f"which contributed a positive influence score of +{top_pos['influence']}."
+        )
+        if len(pos_features) > 1:
+            sec_pos = pos_features[1]
+            summary_parts.append(
+                f"Additionally, its {sec_pos['display_name']} ({sec_pos['value']}) had a positive influence score of +{sec_pos['influence']}."
+            )
+    else:
+        summary_parts.append(f"The vehicle parameters combined to result in a {pred_label} evaluation.")
+            
+    summary = " ".join(summary_parts)
+
+    # Compute decision strength based on confidence thresholds
+    if confidence >= 90.0:
+        decision_strength = "Strong"
+    elif confidence >= 75.0:
+        decision_strength = "Moderate"
+    else:
+        decision_strength = "Weak"
+
+    # Compute confidence reason comparing predicted class and second highest probability
+    margin = confidence - second_confidence
     if prediction_class == "unacc":
-        if safety == "low":
-            return (
-                "This vehicle is classified as Unacceptable primarily due to its Low safety rating. "
-                "Safety is the most critical feature in our evaluation model; any vehicle with low safety "
-                "is automatically rejected, regardless of any other positive characteristics."
-            )
-        if persons == "2":
-            return (
-                "This vehicle is classified as Unacceptable because it only has a capacity of 2 persons. "
-                "Seating capacity is a high-priority feature, and a capacity of 2 is considered insufficient for "
-                "acceptable passenger utility, regardless of price or safety."
-            )
-        if buying == "vhigh" and maint == "vhigh":
-            return (
-                "This vehicle is unacceptable because of the combination of a Very High buying price and Very High maintenance cost. "
-                "The model evaluates this price-to-maintenance ratio as too expensive to justify acceptable vehicle status."
-            )
-        if buying == "vhigh" or maint == "vhigh":
-            cost_type = "buying price" if buying == "vhigh" else "maintenance cost"
-            return (
-                f"This vehicle is unacceptable because of its Very High {cost_type}. "
-                "Even with adequate safety and capacity, a very high cost in either category exceeds acceptable thresholds in the model."
-            )
-        # Fallback for unacc
-        return (
-            "This vehicle is evaluated as Unacceptable due to a combination of weak parameters, "
-            f"such as its {safety} safety rating, {lug_boot} luggage space, or maintenance costs."
+        confidence_reason = (
+            f"The model's classification is {decision_strength.lower()} ({confidence:.1f}% confidence) because key attributes "
+            f"failed to meet basic acceptability thresholds, leading to a clear margin of {margin:.1f} points."
+        )
+    else:
+        confidence_reason = (
+            f"The model has a {decision_strength.lower()} degree of certainty ({confidence:.1f}% confidence) for this evaluation, "
+            f"exhibiting an influence margin of {margin:.1f} points over the next alternative classification."
         )
 
-    # 2. Acceptable (acc)
-    elif prediction_class == "acc":
-        reasons = []
-        if safety == "high":
-            reasons.append("High safety rating")
-        elif safety == "med":
-            reasons.append("Medium safety rating")
-            
-        if persons in ["4", "more"]:
-            reasons.append(f"adequate capacity ({persons} persons)")
-            
-        if buying in ["low", "med"] and maint in ["low", "med"]:
-            reasons.append("affordable purchase and maintenance costs")
+    return {
+        "summary": summary,
+        "top_positive_features": pos_features,
+        "top_negative_features": neg_features,
+        "confidence_reason": confidence_reason,
+        "decision_strength": decision_strength
+    }
 
-        reason_str = ", ".join(reasons)
-        return (
-            f"This vehicle is rated Acceptable because it offers {reason_str}. "
-            "However, its rating is held back from 'Good' due to moderate parameters in other categories (such as price or luggage capacity)."
-        )
-
-    # 3. Good (good)
-    elif prediction_class == "good":
-        return (
-            f"This vehicle is rated Good because it has a strong combination of High safety, "
-            f"sufficient seating capacity ({persons} persons), and very reasonable costs (Buying: {buying.upper()}, Maintenance: {maint.upper()})."
-        )
-
-    # 4. Very Good (vgood)
-    elif prediction_class == "vgood":
-        return (
-            f"This vehicle is rated Very Good because it represents an optimal configuration: "
-            f"High safety, large passenger capacity ({persons} persons), ample luggage space ({lug_boot.upper()} boot), "
-            f"and affordable cost structures (Buying: {buying.upper()}, Maint: {maint.upper()})."
-        )
-
-    return "Vehicle parameters evaluated successfully by the Random Forest model."
