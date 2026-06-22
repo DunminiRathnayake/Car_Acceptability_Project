@@ -63,6 +63,24 @@ async def predict_car_acceptability(request: PredictRequest):
         "inputs": input_data
     }
 
+@app.get("/api/metadata")
+async def get_model_metadata():
+    if not model_handler:
+        raise HTTPException(
+            status_code=503,
+            detail="Model service is currently unavailable. Check server logs."
+        )
+    metadata = model_handler.get_metadata()
+    if not metadata:
+        raise HTTPException(
+            status_code=404,
+            detail="Model metadata not found."
+        )
+    return {
+        "status": "success",
+        "metadata": metadata
+    }
+
 # Check and mount frontend static directory
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 

@@ -52,7 +52,26 @@ def test_prediction_api():
     assert "safety" in data["explanation"].lower()
     assert "low safety rating" in data["explanation"].lower()
     
-    print("\nSUCCESS: Prediction API test and Explainable AI tests passed successfully!")
+    # Test case 3: Invalid category input validation
+    invalid_payload = {
+        "buying": "extra_high", # invalid option
+        "maint": "low",
+        "doors": "4",
+        "persons": "more",
+        "lug_boot": "med",
+        "safety": "high"
+    }
+    print(f"\nSending invalid category payload: {invalid_payload}")
+    response = client.post("/api/predict", json=invalid_payload)
+    print(f"Response status: {response.status_code}")
+    print(f"Response body: {response.json()}")
+    assert response.status_code == 400
+    data = response.json()
+    assert data["status"] == "error"
+    assert "invalid value" in data["message"].lower()
+    assert "valid options" in data["message"].lower()
+    
+    print("\nSUCCESS: Prediction API test, Explainable AI, and Input Validation tests passed successfully!")
 
 if __name__ == "__main__":
     test_prediction_api()

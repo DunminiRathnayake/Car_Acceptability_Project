@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial state
     loadHistory();
+    fetchMetadata();
 
     // 1. Prediction Form Handler
     form.addEventListener('submit', async (e) => {
@@ -249,5 +250,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Close drawer
         toggleDrawer();
+    }
+
+    // 5. Fetch and render model metadata dynamically
+    async function fetchMetadata() {
+        try {
+            const response = await fetch('/api/metadata');
+            const data = await response.json();
+            if (response.ok && data.status === 'success') {
+                const meta = data.metadata;
+                
+                // Update metrics indicators in insights panel
+                const accVal = document.getElementById('accuracy-value');
+                const sizeVal = document.getElementById('size-value');
+                if (accVal) accVal.textContent = `${(meta.accuracy * 100).toFixed(2)}%`;
+                if (sizeVal) sizeVal.textContent = meta.dataset_size.toLocaleString();
+                
+                // Render feature importance distribution dynamically
+                const chartList = document.getElementById('feature-importance-list');
+                if (chartList) {
+                    chartList.innerHTML = '';
+                    
+                    // Style config for feature labels and colors matching design spec
+                    const featureLabels = {
+                        safety: { label: "Safety Rating", color: "#10b981" },
+                        persons: { label: "Persons Capacity", color: "#06b6d4" },
+                        buying: { label: "Buying Price", color: "#3b82f6" },
+                        maint: { label: "Maintenance Cost", color: "#6366f1" },
+                        lug_boot: { label: "Luggage Boot Size", color: "#8b5cf6" },
+                        doors: { label: "Doors Count", color: "#a855f7" }
+                    };
+
+                    // Sort features by their relative importances
+                    const sortedFeatures = Object.entries(meta.feature_importances)
+                        .sort((a, b) => b[1] - a[1]);
+
+                    sortedFeatures.forEach(([feature, importance]) => {
+                        const pct = (importance * 100).toFixed(1);
+                        const config = featureLabels[feature] || { label: feature.toUpperCase(), color: '#3b82f6' };
+                        
+                        const item = document.createElement('div');
+                        item.className = 'feature-bar-item';
+                        item.innerHTML = `
+                            <div class="feature-bar-meta">
+                                <span>${config.label}</span>
+                                <span>${pct}%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: ${pct}%; background: ${config.color};"></div>
+                            </div>
+                        `;
+                        chartList.appendChild(item);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Error loading model metadata:", error);
+        }
     }
 });

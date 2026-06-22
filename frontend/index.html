@@ -187,11 +187,11 @@
                         <p>Our selected model for deployment is a Random Forest model trained on the UCI Car Evaluation dataset. This model offers high generalization and predictive stability.</p>
                         <div class="metric-badge-container">
                             <div class="metric-badge">
-                                <span class="metric-value">97.40%</span>
+                                <span class="metric-value" id="accuracy-value">97.40%</span>
                                 <span class="metric-name">Training Accuracy</span>
                             </div>
                             <div class="metric-badge">
-                                <span class="metric-value">1,728</span>
+                                <span class="metric-value" id="size-value">1,728</span>
                                 <span class="metric-name">Record Size</span>
                             </div>
                             <div class="metric-badge">
@@ -202,7 +202,7 @@
                     </div>
                     <div class="insights-chart">
                         <h4>Feature Importance Distribution</h4>
-                        <div class="feature-bar-list">
+                        <div class="feature-bar-list" id="feature-importance-list">
                             <!-- Safety -->
                             <div class="feature-bar-item">
                                 <div class="feature-bar-meta">
