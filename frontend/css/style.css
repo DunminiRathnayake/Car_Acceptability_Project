@@ -107,6 +107,22 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4));
+    animation: driveInFromLeft 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes driveInFromLeft {
+    0% {
+        transform: translateX(-150px) scale(0.8);
+        opacity: 0;
+    }
+    60% {
+        transform: translateX(10px) scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
 }
 
 .brand h1 {
