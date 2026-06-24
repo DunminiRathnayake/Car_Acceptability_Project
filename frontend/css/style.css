@@ -186,11 +186,13 @@ body {
     border-radius: var(--border-radius);
     padding: 2rem;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed), border-color var(--transition-speed);
 }
 
 .card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
 .card-header {
@@ -543,7 +545,6 @@ body {
 /* Info & Collapsible Section */
 .info-card {
     padding: 1.5rem 2rem;
-    cursor: pointer;
     user-select: none;
 }
 
@@ -551,6 +552,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    border-radius: 8px;
+    transition: background-color var(--transition-speed);
+}
+
+.collapsible-header:hover {
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .collapsible-header h3 {
@@ -1177,6 +1187,12 @@ body {
 
 .shap-info-text i {
     color: var(--accent-blue);
+}
+
+@media (max-width: 576px) {
+    .card {
+        padding: 1.25rem;
+    }
 }
 
 
