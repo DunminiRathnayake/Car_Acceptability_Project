@@ -1,115 +1,154 @@
-# Car Acceptability Predictor & Explainable AI (XAI) Dashboard
+# 🚗 Car Acceptability Predictor & Explainable AI (XAI) Dashboard
 
-An end-to-end Machine Learning web application that predicts vehicle acceptability using physical attributes and provides real-time Explainable AI (XAI) insights. Built using **FastAPI** on the backend, **Vanilla HTML/CSS/JS** on the frontend, and a **Random Forest Classifier** trained on the UCI Car Evaluation dataset.
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.3.0%2B-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![SHAP](https://img.shields.io/badge/SHAP-Explainable%20AI-000000)](https://shap.readthedocs.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The system uses **SHAP (Shapley Additive exPlanations)** values to provide rigorous, mathematically correct explainability scores that detail exactly *why* the model made a specific evaluation.
-
----
-
-## 🚀 Key Features
-
-* **High-Accuracy Classification**: Utilizes a Random Forest Classifier trained to **97.4% test accuracy** across four categories: *Unacceptable*, *Acceptable*, *Good*, and *Very Good*.
-* **Real Explainable AI (XAI)**: Transcends generic classification by computing SHAP values dynamically on each prediction request, delivering:
-  * **Influence / Impact Scores**: Indicating the mathematical contribution strength of each feature.
-  * **Interactive Feature Bar Charts**: Visually separating positive (supporting) and negative (opposing) factors.
-  * **Semantic Explanations**: Custom, logic-driven natural language explanations generated from actual SHAP outputs.
-* **Premium User Interface**: Implements a dark-mode glassmorphism dashboard, featuring:
-  * Responsive layout matching desktop, tablet, and mobile displays.
-  * Micro-animations including card floating transitions, status indicator pulses, and slide-in logo elements.
-  * Prediction history drawer panel for comparative logging.
-* **Model Comparison & Insights**: Includes pre-rendered accuracy benchmarks comparing 8 training runs and validation confusion matrices.
+An end-to-end Machine Learning web application designed to predict vehicle acceptability and deliver mathematical, game-theoretic explanations in real-time. Powered by a **FastAPI** backend and a **Random Forest Classifier** trained on the UCI Car Evaluation dataset, this application integrates a rich, interactive **Explainable AI (XAI) dashboard** using **SHAP (SHapley Additive exPlanations)**.
 
 ---
 
-## 📂 Repository Structure
+## 📌 Table of Contents
+1. [Project Overview](#-project-overview)
+2. [Features](#%EF%B8%8F-features)
+3. [Technology Stack](#%EF%B8%8F-technology-stack)
+4. [Machine Learning Workflow](#-machine-learning-workflow)
+5. [Explainable AI (SHAP) Overview](#-explainable-ai-shap-overview)
+6. [System Architecture](#-system-architecture)
+7. [Model Performance Results](#-model-performance-results)
+8. [Installation Instructions](#-installation-instructions)
+9. [Local Development Setup](#-local-development-setup)
+10. [Screenshots](#-screenshots)
+11. [Future Improvements](#-future-improvements)
+12. [Author Information](#-author-information)
+
+---
+
+## 🔍 Project Overview
+
+In critical decision-making processes—such as leasing approval, safety classification, or purchase evaluations—predictive accuracy alone is insufficient. Stakeholders must understand the reasoning behind a model's output. 
+
+The **Car Acceptability Predictor** solves this challenge. It trains a series of machine learning models on physical features and cost parameters of a car to categorize it as **Unacceptable**, **Acceptable**, **Good**, or **Very Good**. Crucially, it interfaces directly with **SHAP** to unpack the black-box nature of the Random Forest Classifier, showing exactly how safety ratings, seating capacity, luggage space, and cost factors influence the model's final evaluation.
+
+---
+
+## 🛠️ Features
+
+* **Real-time Inference**: Instantly computes vehicle acceptability classifications based on user input.
+* **Explainable AI (XAI) Dashboard**:
+  * **SHAP Influence Scores**: Computes and displays the mathematical attribution of each vehicle parameter toward the prediction.
+  * **Dynamic Sorting**: Separates and ranks factors into positive (supporting) and negative (opposing) influences.
+  * **Semantic Natural Language Explanation**: Dynamically translates the highest-magnitude SHAP values into readable executive summaries.
+* **Interactive UI/UX**:
+  * Clean, dark-mode dashboard styled with **glassmorphism** principles.
+  * Responsive design optimized for desktop, tablet, and mobile displays.
+  * Smooth animations, hover transforms (`translateY(-2px)`), and feedback pulses.
+* **Prediction History drawer**: Locally caches and manages previous evaluations for instant retrieval.
+* **In-app Model Metrics**: Visualizes accuracy comparisons and validation confusion matrices.
+
+---
+
+## 🖥️ Technology Stack
+
+### Backend
+* **Python 3.13.5**
+* **FastAPI**: Modern, high-performance web framework for API construction.
+* **Uvicorn**: Asynchronous ASGI server implementation.
+* **Pydantic**: Robust data validation and settings management.
+
+### Machine Learning & XAI
+* **Scikit-Learn**: Used for data pre-processing, label encoding, cross-validation, and model serialization.
+* **SHAP**: Game-theoretic framework to calculate feature attributions.
+* **Pandas & NumPy**: High-performance data manipulation.
+* **Matplotlib & Seaborn**: Evaluation plot generation.
+
+### Frontend
+* **HTML5**: Semantic document layout.
+* **CSS3**: Variables, Flexbox, CSS Grid layouts, and custom media queries.
+* **JavaScript (ES6+)**: Vanilla client-side script handling AJAX requests, SVG progress gauges, and localStorage.
+
+---
+
+## 📈 Machine Learning Workflow
+
+The pipeline consists of a clean, structured workflow documented across several Jupyter Notebooks:
+
+```mermaid
+graph TD
+    A[01_data_understanding.ipynb] --> B[02_preprocessing.ipynb]
+    B --> C[03_eda.ipynb]
+    C --> D[04_decision_tree.ipynb to 09_svm.ipynb]
+    D --> E[10_model_comparison.ipynb]
+    E --> F[11_save_model.ipynb]
+    F --> G[12_test_model.ipynb]
+```
+
+1. **Data Preprocessing**: Handles encoding of ordinal categorical values (e.g. converting low/med/high parameters to integer keys) and saves LabelEncoders to serialize data transformations.
+2. **Exploratory Data Analysis (EDA)**: Inspects distributions, class imbalances, and correlations.
+3. **Algorithm Benchmarking**: Trains and tunes 8 model variations (Decision Trees, Support Vector Machines, k-Nearest Neighbors, Logistic Regression, Naive Bayes, and Random Forests).
+4. **Production Pipeline**: Serializes the best-performing model (Random Forest), LabelEncoders, and training metadata to disk.
+
+---
+
+## 🧠 Explainable AI (SHAP) Overview
+
+This application adheres strictly to scientific Explainable AI (XAI) standards:
+
+### Game-Theoretic Attributions
+Under the additive property of Shapley values, the sum of the feature attributions plus the model's base expected value equals the predicted probability for the active class:
+
+$$\sum_{j=1}^{M} \phi_j(x) + E[f(x)] = f(x)$$
+
+Where:
+* $\phi_j(x)$ represents the SHAP value (attribution score) for feature $j$.
+* $E[f(x)]$ is the expected baseline probability (the class frequency in the training set).
+* $f(x)$ is the final probability output of the model.
+
+### Rigorous Metrics Presentation
+SHAP values are calculated as marginal contributions in probability space (ranging from $-1.0$ to $+1.0$). To avoid misleading users, they are **never converted to percentages** or presented as standalone probabilities. Instead, they are represented as **Influence Scores**, **Impact Scores**, or **Contribution Strengths**, indicating how much a feature pushed the model towards or away from a classification.
+
+---
+
+## ⚙️ System Architecture
+
+The following diagram illustrates the client-server request loop:
 
 ```text
-├── backend/
-│   ├── app.py                  # FastAPI server hosting static files and prediction endpoint
-│   ├── model_handler.py        # Object wrapper for model inference and feature encoding
-│   ├── explanation_engine.py   # XAI engine compiling dynamic explanations from SHAP contributions
-│   ├── test_api.py             # Automated backend integration and explainability test suite
-│   └── requirements.txt        # Backend dependencies
-├── data/
-│   ├── car.csv                 # Raw UCI Car Evaluation dataset
-│   └── car_encoded.csv         # Processed label-encoded dataset
-├── frontend/
-│   ├── index.html              # Dashboard landing page
-│   ├── css/
-│   │   └── style.css           # Styling system (glassmorphism variables, media queries)
-│   ├── js/
-│   │   └── app.js              # State manager (form submissions, AJAX requests, history cache)
-│   └── assets/
-│       └── img/
-│           ├── confusion_matrix.png # Random Forest validation confusion matrix
-│           └── model_comparison.png # Accuracy comparison chart of all trained models
-├── models/
-│   ├── encoders.pkl            # Serialized label encoders
-│   ├── metadata.pkl            # Model accuracy, size, and feature importances
-│   └── random_forest.pkl       # Serialized Random Forest model artifact
-├── notebooks/
-│   ├── 01_data_understanding.ipynb
-│   ├── 02_preprocessing.ipynb
-│   ├── 03_eda.ipynb
-│   ├── 04_decision_tree.ipynb
-│   ├── 05_random_forest.ipynb
-│   ├── 06_logistic_regression.ipynb
-│   ├── 07_knn.ipynb
-│   ├── 08_naive_bayes.ipynb
-│   ├── 09_svm.ipynb
-│   ├── 10_model_comparison.ipynb
-│   ├── 11_save_model.ipynb
-│   └── 12_test_model.ipynb     # Interactive model validation notebook
-├── scripts/
-│   ├── train.py                # Model training pipeline
-│   └── generate_plots.py       # Plot generator script (saves to frontend assets)
-├── start.bat                   # Batch script to launch FastAPI locally
-└── .gitignore                  # Git exclusions for IDEs, environments, and logs
+┌──────────────┐          HTTP POST /api/predict          ┌─────────────┐
+│  User Input  │ ───────────────────────────────────────> │   FastAPI   │
+│  (Frontend)  │ <─────────────────────────────────────── │  (Backend)  │
+└──────────────┘          JSON Response Payload           └─────────────┘
+       │                                                         │
+       ▼                                                         ▼
+┌──────────────┐                                          ┌─────────────┐
+│ Render SHAP  │                                          │ Model Run   │
+│ Influence    │                                          │ (Predict)   │
+│ Plot / text  │                                          └─────────────┘
+└──────────────┘                                                 │
+                                                                 ▼
+                                                          ┌─────────────┐
+                                                          │ Calculate   │
+                                                          │ SHAP values │
+                                                          └─────────────┘
+                                                                 │
+                                                                 ▼
+                                                          ┌─────────────┐
+                                                          │ Run Natural │
+                                                          │ Lang Engine │
+                                                          └─────────────┘
 ```
 
 ---
 
-## ⚙️ Setup & Installation
+## 📊 Model Performance Results
 
-### Prerequisites
-* Python 3.9 or higher
+During the model selection phase, Random Forest outperformed other models by a significant margin on the test split:
 
-### 1. Install Dependencies
-Navigate to the root directory and install requirements:
-```bash
-pip install -r backend/requirements.txt
-```
-
-### 2. Run the Application
-Start the uvicorn development server:
-```bash
-start.bat
-```
-Alternatively, launch manually:
-```bash
-python -m uvicorn backend.app:app --reload --host 127.0.0.1 --port 8000
-```
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser.
-
----
-
-## 📊 Machine Learning Pipeline
-
-### Dataset
-The model is trained on the **Car Evaluation Dataset** from the **UCI Machine Learning Repository**, which evaluates cars based on:
-1. `buying` (Buying Price): `vhigh`, `high`, `med`, `low`
-2. `maint` (Maintenance Cost): `vhigh`, `high`, `med`, `low`
-3. `doors` (Doors Count): `2`, `3`, `4`, `5more`
-4. `persons` (Persons Capacity): `2`, `4`, `more`
-5. `lug_boot` (Luggage Boot Size): `small`, `med`, `big`
-6. `safety` (Safety Rating): `low`, `med`, `high`
-
-### Model Benchmarks
-Multiple models were evaluated in Jupyter notebooks during development. The final **Random Forest Classifier** was selected for production deployment:
-
-| Model | Accuracy (%) |
+| Model / Classifier | Accuracy (%) |
 | :--- | :---: |
-| **Random Forest (Selected)** | **97.40%** |
+| **Random Forest (Selected for Production)** | **97.40%** |
 | Decision Tree (Max Depth = 10) | 95.38% |
 | Support Vector Machine (SVM) | 91.33% |
 | k-Nearest Neighbors (KNN) | 88.73% |
@@ -120,18 +159,93 @@ Multiple models were evaluated in Jupyter notebooks during development. The fina
 
 ---
 
-## 🧠 Explainable AI (XAI) Standards
+## 📦 Installation Instructions
 
-Unlike simple predictions, this dashboard adheres to real Explainable AI standards:
-1. **Mathematically Correct SHAP Values**: Computes exact Shapley contributions from the Random Forest model for the predicted class.
-2. **No Misleading Probabilities**: Raw SHAP values represent margins of evidence in log-odds/probability space, and are properly displayed as **Influence Scores**, **Impact Scores**, or **Contribution Strengths**, avoiding mathematically incorrect percentage conversions.
-3. **Contextual Natural Language Generation**: Synthesizes custom explanations directly from the highest-magnitude SHAP variables (e.g., explaining why low safety or high price dominated the evaluation).
+### Prerequisites
+* Python 3.9+ installed on your system.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/DunminiRathnayake/Car_Acceptability_Project.git
+cd Car_Acceptability_Project
+```
+
+### 2. Set Up Virtual Environment (Recommended)
+```bash
+python -m venv venv
+# On Windows
+venv\Scripts\activate
+# On MacOS/Linux
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r backend/requirements.txt
+```
 
 ---
 
-## 🧪 Testing
+## 🚀 Local Development Setup
 
-To run the automated test suite verifying the API validation, SHAP scoring formats, and explanation rules:
+### Running the Web Server
+Launch the development server using the Windows batch helper:
+```bash
+start.bat
+```
+Or run uvicorn manually in the shell:
+```bash
+python -m uvicorn backend.app:app --reload --host 127.0.0.1 --port 8000
+```
+Visit the local dashboard: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+### Running Automated Integration Tests
+Verify the backend prediction logic, Pydantic inputs, and SHAP output formats by running the test suite:
 ```bash
 python backend/test_api.py
 ```
+
+### Regenerating Performance Plots
+To update the visual plots in the dashboard assets:
+```bash
+python scripts/generate_plots.py
+```
+
+---
+
+## 📸 Screenshots
+
+Here are snapshots of the application interface:
+
+#### 1. Dashboard Overview
+![Dashboard Overview](docs/screenshots/dashboard_overview.png)
+*Figure 1: The unified dashboard interface displaying inputs, predictions, and model details.*
+
+#### 2. SHAP Explainability Visualization
+![SHAP Explainability](docs/screenshots/shap_explainability.png)
+*Figure 2: Real-time SHAP analysis separating positive (supporting) and negative (opposing) feature impacts.*
+
+#### 3. Feature Importance Distribution
+![Feature Importance](docs/screenshots/feature_importance.png)
+*Figure 3: Global feature importances computed by the Random Forest classifier during training.*
+
+#### 4. Model Accuracy Comparison
+![Model Comparison Results](docs/screenshots/model_comparison_results.png)
+*Figure 4: Validation accuracy benchmarks comparing the production Random Forest model with alternative classifiers.*
+
+---
+
+## 🔮 Future Improvements
+
+* **Alternative Explainers**: Integrate LIME (Local Interpretable Model-agnostic Explanations) alongside SHAP for comparison.
+* **Hyperparameter Tuning Notebook**: Implement automated grid searches or Optuna trials directly in training scripts.
+* **Docker Packaging**: Containerize backend and static frontend code for seamless multi-environment deployments.
+* **Inference Caching**: Add Redis caching to quickly serve explanations for frequently evaluated vehicle configurations.
+
+---
+
+## ✍️ Author Information
+
+* **Developer**: Dunmini Rathnayake
+* **GitHub**: [@DunminiRathnayake](https://github.com/DunminiRathnayake)
+* **Project Repository**: [Car Acceptability Project](https://github.com/DunminiRathnayake/Car_Acceptability_Project)
