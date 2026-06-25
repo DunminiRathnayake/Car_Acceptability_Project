@@ -94,21 +94,20 @@ def explain_prediction(
     # Sort negative features ascending (most negative influence first)
     neg_features.sort(key=lambda x: x["influence_score"])
 
-    # Generate natural language summary using "influence/impact score" terminology
+    # Generate natural language summary using friendly, direct terminology
     summary_parts = []
     if pos_features:
         top_pos = pos_features[0]
         summary_parts.append(
-            f"The vehicle is evaluated as {pred_label} primarily because of its {top_pos['display_name']} ({top_pos['value']}), "
-            f"which contributed a positive impact score of +{top_pos['influence_score']:.4f}."
+            f"The vehicle is evaluated as <strong>{pred_label}</strong> primarily due to its <strong>{top_pos['value']} {top_pos['display_name']}</strong>."
         )
         if len(pos_features) > 1:
             sec_pos = pos_features[1]
             summary_parts.append(
-                f"Additionally, its {sec_pos['display_name']} ({sec_pos['value']}) had a positive impact score of +{sec_pos['influence_score']:.4f}."
+                f"Its <strong>{sec_pos['value']} {sec_pos['display_name']}</strong> also strongly supported this rating."
             )
     else:
-        summary_parts.append(f"The vehicle parameters combined to result in a {pred_label} evaluation.")
+        summary_parts.append(f"Combined vehicle attributes result in a <strong>{pred_label}</strong> evaluation.")
             
     summary = " ".join(summary_parts)
 
@@ -124,13 +123,13 @@ def explain_prediction(
     margin = confidence - second_confidence
     if prediction_class == "unacc":
         confidence_reason = (
-            f"The model's classification is {decision_strength.lower()} ({confidence:.1f}% confidence) because key attributes "
-            f"failed to meet basic acceptability thresholds, leading to a clear margin of {margin:.1f} points over alternative outcomes."
+            f"This evaluation has {decision_strength.lower()} certainty ({confidence:.1f}% confidence) "
+            f"because key features fall short of acceptability standards by a margin of {margin:.0f}%."
         )
     else:
         confidence_reason = (
-            f"The model has a {decision_strength.lower()} degree of certainty ({confidence:.1f}% confidence) for this evaluation, "
-            f"exhibiting a prediction probability margin of {margin:.1f} points over the next alternative classification."
+            f"This evaluation has {decision_strength.lower()} certainty ({confidence:.1f}% confidence), "
+            f"maintaining a margin of {margin:.0f}% over alternative vehicle ratings."
         )
 
     return {

@@ -29,11 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearHistoryBtn = document.getElementById('clear-history-btn');
     const historyTableBody = document.getElementById('history-table-body');
 
-    // Cover Page Elements
-    const coverPage = document.getElementById('cover-page');
+    // SPA Landing Page & Navigation Elements
+    const landingPage = document.getElementById('landing-page');
     const dashboardGrid = document.querySelector('.dashboard-grid');
-    const launchBtn = document.getElementById('launch-btn');
-    const aboutBtn = document.getElementById('about-btn');
+    
+    // Navigation Links
+    const navHome = document.getElementById('nav-home');
+    const navEvaluate = document.getElementById('nav-evaluate');
+    const navInsights = document.getElementById('nav-insights');
+    const navHistory = document.getElementById('nav-history');
+    const navGetStarted = document.getElementById('nav-get-started');
+    
+    // Hero CTA Buttons
+    const ctaEvaluateBtn = document.getElementById('cta-evaluate-btn');
+    const ctaInsightsBtn = document.getElementById('cta-insights-btn');
+    const scrollExplore = document.querySelector('.scroll-explore');
 
     // LocalStorage key
     const LOCAL_STORAGE_KEY = 'car_prediction_history';
@@ -45,36 +55,133 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHistory();
     fetchMetadata();
 
-    // Cover Page Transitions
-    if (launchBtn && coverPage && dashboardGrid) {
-        launchBtn.addEventListener('click', () => {
-            coverPage.classList.add('fade-out');
-            setTimeout(() => {
-                coverPage.classList.add('hidden');
-                coverPage.classList.remove('fade-out');
-                
+    // Active Navigation Link Switcher
+    function setActiveNavLink(activeLink) {
+        const navLinks = document.querySelectorAll('.header-nav .nav-link');
+        navLinks.forEach(link => link.classList.remove('active'));
+        if (activeLink) activeLink.classList.add('active');
+    }
+
+    // SPA View Switcher
+    function showView(targetView) {
+        if (targetView === 'home') {
+            if (!dashboardGrid.classList.contains('hidden')) {
+                dashboardGrid.classList.add('fade-out');
+                setTimeout(() => {
+                    dashboardGrid.classList.add('hidden');
+                    dashboardGrid.classList.remove('fade-out');
+                    landingPage.classList.remove('hidden');
+                    landingPage.classList.add('fade-in');
+                    historyToggleBtn.classList.add('hidden');
+                }, 300);
+            } else {
+                landingPage.classList.remove('hidden');
+                historyToggleBtn.classList.add('hidden');
+            }
+        } else if (targetView === 'dashboard') {
+            if (!landingPage.classList.contains('hidden')) {
+                landingPage.classList.add('fade-out');
+                setTimeout(() => {
+                    landingPage.classList.add('hidden');
+                    landingPage.classList.remove('fade-out');
+                    dashboardGrid.classList.remove('hidden');
+                    dashboardGrid.classList.add('fade-in');
+                    historyToggleBtn.classList.remove('hidden');
+                }, 300);
+            } else {
                 dashboardGrid.classList.remove('hidden');
-                dashboardGrid.classList.add('fade-in');
-                
-                if (historyToggleBtn) historyToggleBtn.classList.remove('hidden');
-                if (aboutBtn) aboutBtn.classList.remove('hidden');
-            }, 300);
+                historyToggleBtn.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Link Trigger Handlers
+    if (navHome) {
+        navHome.addEventListener('click', (e) => {
+            e.preventDefault();
+            setActiveNavLink(navHome);
+            showView('home');
         });
     }
 
-    if (aboutBtn && coverPage && dashboardGrid) {
-        aboutBtn.addEventListener('click', () => {
-            dashboardGrid.classList.add('fade-out');
+    if (navEvaluate) {
+        navEvaluate.addEventListener('click', (e) => {
+            e.preventDefault();
+            setActiveNavLink(navEvaluate);
+            showView('dashboard');
+        });
+    }
+
+    if (navInsights) {
+        navInsights.addEventListener('click', (e) => {
+            e.preventDefault();
+            setActiveNavLink(navInsights);
+            showView('dashboard');
+            
+            // Expand collapsible insights card
+            if (insightsContent && insightsContent.classList.contains('hidden')) {
+                insightsContent.classList.remove('hidden');
+                if (insightsChevron) insightsChevron.classList.add('rotate');
+            }
+            
+            // Scroll smoothly to plots
             setTimeout(() => {
-                dashboardGrid.classList.add('hidden');
-                dashboardGrid.classList.remove('fade-out');
-                
-                coverPage.classList.remove('hidden');
-                coverPage.classList.add('fade-in');
-                
-                if (historyToggleBtn) historyToggleBtn.classList.add('hidden');
-                if (aboutBtn) aboutBtn.classList.add('hidden');
-            }, 300);
+                const plotsSection = document.querySelector('.insights-plots');
+                if (plotsSection) {
+                    plotsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 350);
+        });
+    }
+
+    if (navHistory) {
+        navHistory.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleDrawer();
+        });
+    }
+
+    if (navGetStarted) {
+        navGetStarted.addEventListener('click', (e) => {
+            e.preventDefault();
+            setActiveNavLink(navEvaluate);
+            showView('dashboard');
+        });
+    }
+
+    // Hero CTA Buttons
+    if (ctaEvaluateBtn) {
+        ctaEvaluateBtn.addEventListener('click', () => {
+            setActiveNavLink(navEvaluate);
+            showView('dashboard');
+        });
+    }
+
+    if (ctaInsightsBtn) {
+        ctaInsightsBtn.addEventListener('click', () => {
+            setActiveNavLink(navInsights);
+            showView('dashboard');
+            
+            if (insightsContent && insightsContent.classList.contains('hidden')) {
+                insightsContent.classList.remove('hidden');
+                if (insightsChevron) insightsChevron.classList.add('rotate');
+            }
+            
+            setTimeout(() => {
+                const plotsSection = document.querySelector('.insights-plots');
+                if (plotsSection) {
+                    plotsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 350);
+        });
+    }
+
+    if (scrollExplore) {
+        scrollExplore.addEventListener('click', () => {
+            const featuresSection = document.querySelector('.insights-features-section');
+            if (featuresSection) {
+                featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     }
 
@@ -196,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Display summary text
-        explanationText.textContent = explanation.summary || "Vehicular parameters processed successfully.";
+        explanationText.innerHTML = explanation.summary || "Vehicular parameters processed successfully.";
 
         // Update Strength and Reason badges
         const strengthBadge = document.getElementById('decision-strength-badge');
@@ -241,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         item.innerHTML = `
                             <div class="shap-meta">
                                 <span class="shap-label">${feat.display_name} <span class="shap-feature-val">(${feat.value})</span></span>
-                                <span class="shap-score positive-score">+${feat.influence_score.toFixed(4)} Impact Score</span>
+                                <span class="shap-score positive-score">+${feat.influence_score.toFixed(2)} Influence</span>
                             </div>
                             <div class="shap-bar-bg">
                                 <div class="shap-bar-fill positive-fill" style="width: ${barWidth}%"></div>
@@ -262,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         item.innerHTML = `
                             <div class="shap-meta">
                                 <span class="shap-label">${feat.display_name} <span class="shap-feature-val">(${feat.value})</span></span>
-                                <span class="shap-score negative-score">${feat.influence_score.toFixed(4)} Impact Score</span>
+                                <span class="shap-score negative-score">${feat.influence_score.toFixed(2)} Influence</span>
                             </div>
                             <div class="shap-bar-bg">
                                 <div class="shap-bar-fill negative-fill" style="width: ${barWidth}%"></div>
