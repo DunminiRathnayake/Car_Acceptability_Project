@@ -77,11 +77,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(inputs)
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.message || 'Server error occurred');
+                let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData && errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (errorData && errorData.detail) {
+                        errorMessage = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+                    }
+                } catch (e) {
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) errorMessage = errorText;
+                    } catch (textErr) {}
+                }
+                throw new Error(errorMessage);
             }
+
+            const data = await response.json();
 
             // Successfully received prediction
             renderResult(data);
@@ -353,8 +367,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchMetadata() {
         try {
             const response = await fetch('/api/metadata');
+            if (!response.ok) {
+                let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                try {
+                    const errorText = await response.text();
+                    if (errorText) errorMessage = errorText;
+                } catch (e) {}
+                throw new Error(errorMessage);
+            }
             const data = await response.json();
-            if (response.ok && data.status === 'success') {
+            if (data.status === 'success') {
                 const meta = data.metadata;
                 
                 // Update metrics indicators in insights panel
