@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearHistoryBtn = document.getElementById('clear-history-btn');
     const historyTableBody = document.getElementById('history-table-body');
 
+    // Cover Page Elements
+    const coverPage = document.getElementById('cover-page');
+    const dashboardGrid = document.querySelector('.dashboard-grid');
+    const launchBtn = document.getElementById('launch-btn');
+    const aboutBtn = document.getElementById('about-btn');
+
     // LocalStorage key
     const LOCAL_STORAGE_KEY = 'car_prediction_history';
 
@@ -38,6 +44,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial state
     loadHistory();
     fetchMetadata();
+
+    // Cover Page Transitions
+    if (launchBtn && coverPage && dashboardGrid) {
+        launchBtn.addEventListener('click', () => {
+            coverPage.classList.add('fade-out');
+            setTimeout(() => {
+                coverPage.classList.add('hidden');
+                coverPage.classList.remove('fade-out');
+                
+                dashboardGrid.classList.remove('hidden');
+                dashboardGrid.classList.add('fade-in');
+                
+                if (historyToggleBtn) historyToggleBtn.classList.remove('hidden');
+                if (aboutBtn) aboutBtn.classList.remove('hidden');
+            }, 300);
+        });
+    }
+
+    if (aboutBtn && coverPage && dashboardGrid) {
+        aboutBtn.addEventListener('click', () => {
+            dashboardGrid.classList.add('fade-out');
+            setTimeout(() => {
+                dashboardGrid.classList.add('hidden');
+                dashboardGrid.classList.remove('fade-out');
+                
+                coverPage.classList.remove('hidden');
+                coverPage.classList.add('fade-in');
+                
+                if (historyToggleBtn) historyToggleBtn.classList.add('hidden');
+                if (aboutBtn) aboutBtn.classList.add('hidden');
+            }, 300);
+        });
+    }
 
     // Cache-bust dashboard plots to force reload and bypass browser cache
     const plots = document.querySelectorAll('.responsive-plot');
