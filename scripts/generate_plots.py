@@ -44,11 +44,9 @@ def generate_plots():
     plt.xticks(rotation=30, fontsize=10)
     plt.tight_layout()
     
-    # Save model_comparison.png in notebooks, results, and frontend
+    # Save model_comparison.png in frontend assets
     mc_paths = [
-        os.path.join(base_dir, "frontend", "model_comparison.png"),
-        os.path.join(base_dir, "results", "model_comparison.png"),
-        os.path.join(base_dir, "notebooks", "model_comparison.png")
+        os.path.join(base_dir, "frontend", "assets", "img", "model_comparison.png")
     ]
     
     for p in mc_paths:
@@ -103,8 +101,7 @@ def generate_plots():
     plt.tight_layout()
     
     out_paths = [
-        os.path.join(base_dir, "frontend", "output.png"),
-        os.path.join(base_dir, "output.png")
+        os.path.join(base_dir, "frontend", "assets", "img", "confusion_matrix.png")
     ]
     
     for p in out_paths:
