@@ -113,32 +113,49 @@ SHAP values are calculated as marginal contributions in probability space (rangi
 
 ## ⚙️ System Architecture
 
-The following diagram illustrates the client-server request loop:
+The following interactive Mermaid diagram illustrates the client-server request loop, data encoding pipeline, and Explainable AI computation flow:
 
-```text
-┌──────────────┐          HTTP POST /api/predict          ┌─────────────┐
-│  User Input  │ ───────────────────────────────────────> │   FastAPI   │
-│  (Frontend)  │ <─────────────────────────────────────── │  (Backend)  │
-└──────────────┘          JSON Response Payload           └─────────────┘
-       │                                                         │
-       ▼                                                         ▼
-┌──────────────┐                                          ┌─────────────┐
-│ Render SHAP  │                                          │ Model Run   │
-│ Influence    │                                          │ (Predict)   │
-│ Plot / text  │                                          └─────────────┘
-└──────────────┘                                                 │
-                                                                 ▼
-                                                          ┌─────────────┐
-                                                          │ Calculate   │
-                                                          │ SHAP values │
-                                                          └─────────────┘
-                                                                 │
-                                                                 ▼
-                                                          ┌─────────────┐
-                                                          │ Run Natural │
-                                                          │ Lang Engine │
-                                                          └─────────────┘
+```mermaid
+graph TD
+    User([User / Client Browser]) -->|1. Selects Features & Submits| FE[Frontend Dashboard]
+    FE -->|2. HTTP POST /api/predict| BE[FastAPI Backend API]
+    
+    subgraph Backend Services [FastAPI Application Server]
+        BE -->|3. Passes Input Dictionary| MH[Model Handler]
+        BE -->|5. Computes Attributions| EE[SHAP Explainability Engine]
+        EE -->|6. Generates Semantic Explanation| BE
+        
+        subgraph Machine Learning Stack [Model & Encoding Layers]
+            MH -->|Loads| ENC[(encoders.pkl)]
+            MH -->|Loads| META[(metadata.pkl)]
+            MH -->|Performs Encoding & Inference| RF{Random Forest Model}
+            RF -->|Loads| RF_PKL[(random_forest.pkl)]
+            
+            RF -->|4. Prediction & Confidence| MH
+            MH -->|Passes Results| BE
+        end
+    end
+    
+    BE -->|7. JSON Response Payload| FE
+    FE -->|8. Visualizes Gauges & SHAP plots| User
+    
+    style User fill:#111827,stroke:#3b82f6,stroke-width:2px,color:#f3f4f6
+    style FE fill:#1e293b,stroke:#8b5cf6,stroke-width:2px,color:#f3f4f6
+    style BE fill:#0f172a,stroke:#06b6d4,stroke-width:2px,color:#f3f4f6
+    style MH fill:#1e1b4b,stroke:#3b82f6,stroke-width:1px,color:#f3f4f6
+    style EE fill:#1e1b4b,stroke:#06b6d4,stroke-width:1px,color:#f3f4f6
+    style RF fill:#311042,stroke:#8b5cf6,stroke-width:2px,color:#f3f4f6
+    style ENC fill:#111827,stroke:#9ca3af,stroke-dasharray: 5 5,color:#f3f4f6
+    style META fill:#111827,stroke:#9ca3af,stroke-dasharray: 5 5,color:#f3f4f6
+    style RF_PKL fill:#111827,stroke:#9ca3af,stroke-dasharray: 5 5,color:#f3f4f6
 ```
+
+### Visual System Map
+For a high-level visual representation of the architecture and data dependencies:
+
+![System Architecture Diagram](docs/screenshots/system_architecture.png)
+*Figure 5: High-level system architecture layout showing data dependencies and flow integrations.*
+
 
 ---
 
